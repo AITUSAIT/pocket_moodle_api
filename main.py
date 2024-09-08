@@ -4,14 +4,17 @@ from fastapi import FastAPI
 
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER
 from modules.database.db import DB
-from routers import grades, groups, health, users
+from routers import courses, courses_content, deadlines, grades, groups, health, users
 
 app = FastAPI()
 
 app.include_router(health.router)
 app.include_router(users.router)
 app.include_router(groups.router)
+app.include_router(courses.router)
+app.include_router(courses_content.router)
 app.include_router(grades.router)
+app.include_router(deadlines.router)
 
 
 async def connect_db() -> None:
