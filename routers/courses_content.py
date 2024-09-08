@@ -1,8 +1,5 @@
-from typing import Any
-
 from fastapi import APIRouter, HTTPException, status
 
-from modules.database.course import CourseDB
 from modules.database.course_contents import CourseContentDB
 from modules.database.models import CourseContent, CourseContentModuleFile, CourseContentModuleUrl
 
