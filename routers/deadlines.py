@@ -12,7 +12,7 @@ router = APIRouter(
 
 
 @router.get("/")
-async def get_deadline(user_id: int, course_id: int) -> dict[str, Deadline]:
+async def get_deadlines(user_id: int, course_id: int) -> dict[str, Deadline]:
     deadlines = await DeadlineDB.get_deadlines(user_id=user_id, course_id=course_id)
     if not deadlines:
         raise HTTPException(
