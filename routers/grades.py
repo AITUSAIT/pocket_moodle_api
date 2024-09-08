@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 
-@router.get("/{grade_id}")
+@router.get("/")
 async def get_grades(user_id: int, course_id: int):
     grades = await GradeDB.get_grades(user_id=user_id, course_id=course_id)
     if not grades:
