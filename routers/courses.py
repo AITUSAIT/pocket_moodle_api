@@ -28,4 +28,4 @@ async def get_courses(user_id: int, is_active: bool | None = None) -> dict[str, 
 @router.get("/is_ready_courses/{user_id}")
 async def is_ready_courses(user_id: int) -> dict[str, Any]:
     is_ready = await CourseDB.is_ready_courses(user_id=user_id)
-    return {"success": True, "res": is_ready}
+    return {"success": True, "response": {"is_ready_courses": is_ready}}
