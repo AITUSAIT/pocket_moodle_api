@@ -23,6 +23,12 @@ async def get_group(group_tg_id: int):
 
 @router.post("/")
 async def create_group(group_tg_id: int, group_name: str):
+    group = await GroupDB.get_group(group_tg_id)
+    if group:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=f"Group with tg_id={group_tg_id} is already exists!"
+        )
+
     await GroupDB.add_group(group_tg_id=group_tg_id, group_name=group_name)
 
     return {"success": True, "desc": "Group created!"}

@@ -21,6 +21,12 @@ async def get_user(user_id: int):
 
 @router.post("/")
 async def create_user(user_id: int):
+    user = await UserDB.get_user(user_id=user_id)
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=f"User with user_id={user_id} is already exists!"
+        )
+
     await UserDB.create_user(user_id=user_id)
 
     return {"success": True, "desc": "User created!"}
