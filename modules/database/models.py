@@ -54,6 +54,20 @@ class Group:
     name: str
     users: list[int]
 
+    def to_json(self) -> str:
+        return json.dumps(asdict(self), cls=UserJSONEncoder)
+
+    def to_dict(self) -> dict[str, Any]:
+        return json.loads(self.to_json())
+
+    def __hash__(self) -> int:
+        return hash((self.tg_id))
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Group):
+            return self.tg_id == other.tg_id
+        return False
+
 
 @dataclass
 class Grade:
