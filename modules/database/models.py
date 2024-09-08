@@ -19,6 +19,8 @@ class User:
     register_date: datetime
     mail: str
     last_active: datetime | None
+    is_admin: bool
+    is_manager: bool
 
     def is_newbie(self) -> bool:
         register_date = self.register_date

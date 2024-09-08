@@ -42,17 +42,46 @@ class UserDB(DB):
     @classmethod
     async def get_user(cls, user_id: int) -> User | None:
         async with cls.pool.acquire() as connection:
-            user = await connection.fetchrow(
+            user_data = await connection.fetchrow(
                 "SELECT user_id, api_token, register_date, mail, last_active FROM users WHERE user_id = $1",
                 user_id,
             )
-            return User(*user) if user else None
+            if not user_data:
+                return None
+
+            user_id = user_data[0]
+            api_token = user_data[1]
+            register_date = user_data[2]
+            mail = user_data[3]
+            last_active = user_data[4]
+
+            user = User(
+                user_id=user_id,
+                api_token=api_token,
+                register_date=register_date,
+                mail=mail,
+                last_active=last_active,
+                is_admin=await cls.is_admin(user_id),
+                is_manager=await cls.is_manager(user_id),
+            )
+            return user
 
     @classmethod
     async def get_users(cls) -> list[User]:
         async with cls.pool.acquire() as connection:
             users = await connection.fetch("SELECT user_id, api_token, register_date, mail, last_active FROM users")
-            return [User(*user) for user in users]
+            return [
+                User(
+                    user_id=user_data[0],
+                    api_token=user_data[1],
+                    register_date=user_data[2],
+                    mail=user_data[3],
+                    last_active=user_data[4],
+                    is_admin=await cls.is_admin(user_data[0]),
+                    is_manager=await cls.is_manager(user_data[0]),
+                )
+                for user_data in users
+            ]
 
     @classmethod
     async def register(cls, user_id: int, mail: str, api_token: str) -> None:
@@ -66,13 +95,13 @@ class UserDB(DB):
                 )
 
     @classmethod
-    async def if_admin(cls, user_id: int) -> bool:
+    async def is_admin(cls, user_id: int) -> bool:
         async with cls.pool.acquire() as connection:
             admin_data = await connection.fetchrow("SELECT user_id, status FROM admin WHERE user_id = $1", user_id)
             return admin_data is not None and admin_data["status"] == "admin"
 
     @classmethod
-    async def if_manager(cls, user_id: int) -> bool:
+    async def is_manager(cls, user_id: int) -> bool:
         async with cls.pool.acquire() as connection:
             manager_data = await connection.fetchrow("SELECT user_id, status FROM admin WHERE user_id = $1", user_id)
             return manager_data is not None and manager_data["status"] == "manager"
