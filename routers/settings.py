@@ -23,7 +23,7 @@ async def get_settings(user_id: int) -> SettingBot:
 
 
 @router.post("/{user_id}")
-async def set_notification_status(user_id: int, key: str, state: bool) -> dict[str, Any]:
+async def set_settings(user_id: int, key: str, state: bool) -> dict[str, Any]:
     try:
         await SettingsBotDB.set_setting(user_id=user_id, key=key, state=state)
     except Exception as e:
