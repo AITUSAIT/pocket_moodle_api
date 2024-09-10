@@ -5,13 +5,12 @@ from fastapi import APIRouter, status
 
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER
 from modules.database.db import DB
-from routers import courses, courses_content, deadlines, grades, groups, health, users
+from routers import courses, courses_content, deadlines, grades, groups, health, queue, users
 
 app = FastAPI()
 
 api_router = APIRouter(
     prefix="/api",
-    tags=["api"],
     responses={status.HTTP_404_NOT_FOUND: {"desc": "Not found"}},
 )
 api_router.include_router(health.router)
@@ -21,6 +20,7 @@ api_router.include_router(courses.router)
 api_router.include_router(courses_content.router)
 api_router.include_router(grades.router)
 api_router.include_router(deadlines.router)
+api_router.include_router(queue.router)
 app.include_router(api_router)
 
 
