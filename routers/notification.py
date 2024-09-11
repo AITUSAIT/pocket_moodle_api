@@ -22,15 +22,3 @@ async def get_notification_status(user_id: int) -> NotificationStatus:
         )
 
     return notification_status
-
-
-@router.post("/{user_id}")
-async def set_notification_status(user_id: int, key: str, state: bool) -> dict[str, Any]:
-    try:
-        await NotificationDB.set_notification_status(user_id=user_id, key=key, state=state)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=f"unnable to set notification status for user {user_id}\n{e}"
-        ) from e
-
-    return {"success": True, "desc": f"notification status {key} for user {user_id=} is set to {state}"}
