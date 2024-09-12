@@ -44,7 +44,7 @@ jobs:
         run: |
           cd /home/aitusa/server_side_configs/
           git pull
-          ./reload_pm_api.sh
+          ./reload_pm.sh
 
       - name: Send Telegram Notify To IT Chat
         if: github.event_name != 'release'

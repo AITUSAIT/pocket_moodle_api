@@ -1,20 +1,26 @@
 import asyncio
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI, status
 
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER
 from modules.database.db import DB
-from routers import courses, courses_content, deadlines, grades, groups, health, users
+from routers import courses, courses_content, deadlines, grades, groups, health, queue, users
 
 app = FastAPI()
 
-app.include_router(health.router)
-app.include_router(users.router)
-app.include_router(groups.router)
-app.include_router(courses.router)
-app.include_router(courses_content.router)
-app.include_router(grades.router)
-app.include_router(deadlines.router)
+api_router = APIRouter(
+    prefix="/api",
+    responses={status.HTTP_404_NOT_FOUND: {"desc": "Not found"}},
+)
+api_router.include_router(health.router)
+api_router.include_router(users.router)
+api_router.include_router(groups.router)
+api_router.include_router(courses.router)
+api_router.include_router(courses_content.router)
+api_router.include_router(grades.router)
+api_router.include_router(deadlines.router)
+api_router.include_router(queue.router)
+app.include_router(api_router)
 
 
 async def connect_db() -> None:
