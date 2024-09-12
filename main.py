@@ -1,7 +1,6 @@
 import asyncio
 
-from fastapi import APIRouter, FastAPI
-from fastapi import APIRouter, status
+from fastapi import APIRouter, FastAPI, status
 
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER
 from modules.database.db import DB

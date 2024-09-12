@@ -2,7 +2,7 @@ import json
 from copy import copy
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Optional
 
 
 class UserJSONEncoder(json.JSONEncoder):
@@ -48,6 +48,34 @@ class User(BaseModel):
         if isinstance(other, User):
             return self.user_id == other.user_id
         return False
+
+
+@dataclass
+class MailingModel(BaseModel):
+    id: int
+    content: str
+    media_type: Optional[str] = None
+    media_id: Optional[str] = None
+
+    def __hash__(self) -> int:
+        return hash(
+            self.id,
+        )
+
+
+@dataclass
+class MailingMessage(BaseModel):
+    id: int
+    mailing_id: int
+    chat_id: int
+    message_id: Optional[int] = None
+    sent_date: Optional[datetime] = None
+    edit_date: Optional[datetime] = None
+
+    def __hash__(self) -> int:
+        return hash(
+            self.message_id,
+        )
 
 
 @dataclass

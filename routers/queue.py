@@ -1,15 +1,13 @@
 import logging
 import time
 from typing import Annotated, Any
+
 from fastapi import APIRouter, Form, HTTPException, status
 
+import global_vars
 from modules.database.models import User
 from modules.database.server import ServerDB
 from modules.database.user import UserDB
-
-SERVERS = {}
-USERS: list[int] = []
-START_TIME: float | None = None
 
 router = APIRouter(
     prefix="/queue",
@@ -21,25 +19,21 @@ router = APIRouter(
 
 @router.get("/user")
 async def get_user(token: str) -> User:
-    global SERVERS
-    global USERS
-    global START_TIME
+    if global_vars.SERVERS == {}:
+        global_vars.SERVERS = await ServerDB.get_servers()
+        for key, val in global_vars.SERVERS.items():
+            global_vars.SERVERS[key] = val
 
-    if SERVERS == {}:
-        SERVERS = await ServerDB.get_servers()
-        for key, val in SERVERS.items():
-            SERVERS[key] = val
-
-    if token not in SERVERS:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token")
+    if token not in global_vars.SERVERS:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     while 1:
-        if USERS == []:
-            if START_TIME is not None:
-                logging.info(f"{round(time.time() - START_TIME, 2)} секунд\n")
-            START_TIME = time.time()
-            USERS = await UserDB.get_users()
-        user: User = USERS.pop(0)
+        if global_vars.USERS == []:
+            if global_vars.START_TIME is not None:
+                logging.info(f"{round(time.time() - global_vars.START_TIME, 2)} секунд\n")
+            global_vars.START_TIME = time.time()
+            global_vars.USERS = await UserDB.get_users()
+        user = global_vars.USERS.pop(0)
 
         if user.has_api_token() and user.is_active_user():
             break
@@ -49,17 +43,15 @@ async def get_user(token: str) -> User:
 
 @router.post("/log")
 async def write_log(token: str, user_id: Annotated[int, Form()], log: Annotated[str, Form()]) -> dict[str, Any]:
-    global SERVERS
+    if global_vars.SERVERS == {}:
+        global_vars.SERVERS = await ServerDB.get_servers()
+        for key, val in global_vars.SERVERS.items():
+            global_vars.SERVERS[key] = val
 
-    if SERVERS == {}:
-        SERVERS = await ServerDB.get_servers()
-        for key, val in SERVERS.items():
-            SERVERS[key] = val
+    if token not in global_vars.SERVERS:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-    if token not in SERVERS:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token")
-
-    server = SERVERS[token]
+    server = global_vars.SERVERS[token]
 
     logging.info(f"{user_id} - {log} - {server.name}")
     return {"success": True, "desc": "Log writed!"}
