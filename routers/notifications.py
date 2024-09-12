@@ -20,3 +20,10 @@ async def get_notification_status(user_id: int) -> NotificationStatus:
         )
 
     return notification_status
+
+
+@router.post("/{user_id}")
+async def set_notification_status(user_id: int, notification_status: NotificationStatus):
+    await NotificationDB.set_notification_status(user_id=user_id, notification_status=notification_status)
+
+    return {"success": True, "desc": "Notification status updated!"}

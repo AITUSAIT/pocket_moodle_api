@@ -13,6 +13,25 @@ class NotificationDB(DB):
             return NotificationStatus(*_)
 
     @classmethod
-    async def set_notification_status(cls, user_id: int, key: str, state: bool) -> None:
+    async def set_notification_status(cls, user_id: int, notification_status: NotificationStatus) -> None:
         async with cls.pool.acquire() as connection:
-            await connection.execute(f"UPDATE user_notification SET {key} = $1 WHERE user_id = $2", state, user_id)
+            await connection.execute(
+                """
+                UPDATE
+                    user_notification 
+                SET
+                    status = $1,
+                    is_newbie_requested = $2,
+                    is_update_requested = $3,
+                    is_end_date = $4,
+                    error_check_token = $5,
+                WHERE
+                    user_id = $6
+                """,
+                notification_status.status,
+                notification_status.is_newbie_requested,
+                notification_status.is_update_requested,
+                notification_status.is_end_date,
+                notification_status.error_check_token,
+                user_id,
+            )
