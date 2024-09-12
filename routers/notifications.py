@@ -4,8 +4,8 @@ from modules.database.models import NotificationStatus
 from modules.database.notification import NotificationDB
 
 router = APIRouter(
-    prefix="/notification",
-    tags=["notification"],
+    prefix="/notifications",
+    tags=["notifications"],
     # dependencies=[Depends(get_token_header)],
     responses={404: {"desc": "Not found"}},
 )
