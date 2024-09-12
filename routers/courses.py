@@ -6,7 +6,7 @@ from modules.database.course import CourseDB
 from modules.database.models import Course
 
 router = APIRouter(
-    prefix="/Courses",
+    prefix="/courses",
     tags=["courses"],
     # dependencies=[Depends(get_token_header)],
     responses={404: {"desc": "Not found"}},
