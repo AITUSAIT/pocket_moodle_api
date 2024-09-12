@@ -2,7 +2,7 @@ import logging
 import time
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Form, HTTPException, status
+from fastapi import APIRouter, Form, HTTPException, Query, status
 
 import global_vars
 from modules.database.models import User
@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 @router.get("/user")
-async def get_user(token: str) -> User:
+async def get_user(token: Annotated[str, Query(title="Server API token")]) -> User:
     if global_vars.SERVERS == {}:
         global_vars.SERVERS = await ServerDB.get_servers()
         for key, val in global_vars.SERVERS.items():
@@ -42,7 +42,9 @@ async def get_user(token: str) -> User:
 
 
 @router.post("/log")
-async def write_log(token: str, user_id: Annotated[int, Form()], log: Annotated[str, Form()]) -> dict[str, Any]:
+async def write_log(
+    token: Annotated[str, Query(title="Server API token")], user_id: Annotated[int, Form()], log: Annotated[str, Form()]
+) -> dict[str, Any]:
     if global_vars.SERVERS == {}:
         global_vars.SERVERS = await ServerDB.get_servers()
         for key, val in global_vars.SERVERS.items():

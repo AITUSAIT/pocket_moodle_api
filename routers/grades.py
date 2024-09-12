@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Query, status
 
 from modules.database.grade import GradeDB
 
@@ -11,7 +13,10 @@ router = APIRouter(
 
 
 @router.get("/")
-async def get_grades(user_id: int, course_id: int):
+async def get_grades(
+    user_id: Annotated[int, Query(title="The ID of the user to get grades")],
+    course_id: Annotated[int, Query(title="The ID of the course to get grades")],
+):
     grades = await GradeDB.get_grades(user_id=user_id, course_id=course_id)
     if not grades:
         raise HTTPException(

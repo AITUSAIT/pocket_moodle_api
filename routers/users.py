@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Path, Query, status
 
 from modules.database.models import User
 from modules.database.user import UserDB
@@ -14,7 +14,7 @@ router = APIRouter(
 
 
 @router.get("/{user_id}")
-async def get_user(user_id: int) -> User:
+async def get_user(user_id: Annotated[int, Path(title="The ID of the user to get")]) -> User:
     user = await UserDB.get_user(user_id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id={user_id} is not found!")
@@ -23,7 +23,7 @@ async def get_user(user_id: int) -> User:
 
 
 @router.post("/")
-async def create_user(user_id: int) -> dict[str, Any]:
+async def create_user(user_id: Annotated[int, Query(title="The ID of the user to create")]) -> dict[str, Any]:
     user = await UserDB.get_user(user_id=user_id)
     if user:
         raise HTTPException(
@@ -36,7 +36,11 @@ async def create_user(user_id: int) -> dict[str, Any]:
 
 
 @router.post("/{user_id}/register_moodle")
-async def register_moodle(user_id: int, mail: str, api_token: str) -> dict[str, Any]:
+async def register_moodle(
+    user_id: Annotated[int, Path(title="The ID of the user to register moodle")],
+    mail: Annotated[str, Query(title="AITU Moodle mail")],
+    api_token: Annotated[str, Query(title="AITU Moodle web service key")],
+) -> dict[str, Any]:
     await UserDB.register(user_id=user_id, mail=mail, api_token=api_token)
 
     return {"success": True, "desc": "Moodle user registered!"}

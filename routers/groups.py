@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Path, Query, status
 
 from modules.database.group import GroupDB
 from modules.database.models import Group
@@ -14,7 +14,7 @@ router = APIRouter(
 
 
 @router.get("/{group_tg_id}")
-async def get_group(group_tg_id: int) -> Group:
+async def get_group(group_tg_id: Annotated[int, Path(title="The TG ID of the group to get")]) -> Group:
     group = await GroupDB.get_group(group_tg_id)
     if not group:
         raise HTTPException(
@@ -25,7 +25,10 @@ async def get_group(group_tg_id: int) -> Group:
 
 
 @router.post("/")
-async def create_group(group_tg_id: int, group_name: str) -> dict[str, Any]:
+async def create_group(
+    group_tg_id: Annotated[int, Query(title="The TG ID of the group to create")],
+    group_name: Annotated[str, Query(title="Name of the group to create")],
+) -> dict[str, Any]:
     group = await GroupDB.get_group(group_tg_id)
     if group:
         raise HTTPException(
@@ -38,7 +41,10 @@ async def create_group(group_tg_id: int, group_name: str) -> dict[str, Any]:
 
 
 @router.post("/{group_tg_id}/register_user")
-async def group_register_user(group_tg_id: int, user_id: int) -> dict[str, Any]:
+async def group_register_user(
+    group_tg_id: Annotated[int, Path(title="The TG ID of the group to register user")],
+    user_id: Annotated[int, Query(title="The ID of the user to register in group")],
+) -> dict[str, Any]:
     await GroupDB.register(user_id=user_id, group_tg_id=group_tg_id)
 
     return {"success": True, "desc": "Group user registered!"}

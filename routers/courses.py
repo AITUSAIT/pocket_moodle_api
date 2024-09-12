@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Query
 
 from modules.database.course import CourseDB
 from modules.database.models import Course
@@ -14,13 +14,11 @@ router = APIRouter(
 
 
 @router.get("/")
-async def get_courses(user_id: int, is_active: bool | None = None) -> dict[str, Course]:
+async def get_courses(
+    user_id: Annotated[int, Query(title="The ID of the user to get courses")],
+    is_active: Annotated[bool | None, Query(title="true or false")] = None,
+) -> dict[str, Course]:
     courses = await CourseDB.get_courses(user_id=user_id, is_active=is_active)
-    if not courses:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"deadlines for user with {user_id=} for {'active' if is_active else 'not active'} courses is not found!",
-        )
 
     return courses
 
