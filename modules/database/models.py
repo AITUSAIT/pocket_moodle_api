@@ -27,9 +27,9 @@ class PydanticBaseModel(BaseModel):
 
 class User(PydanticBaseModel):
     user_id: int
-    api_token: str
+    api_token: Optional[str]
     register_date: datetime
-    mail: str
+    mail: Optional[str]
     last_active: Optional[datetime]
     is_admin: bool
     is_manager: bool
@@ -86,7 +86,7 @@ class Deadline(PydanticBaseModel):
     due: datetime
     graded: bool
     submitted: bool
-    status: int
+    status: dict[str, int]
 
     class Config:
         frozen = True
