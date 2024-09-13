@@ -30,4 +30,3 @@ async def set_notification_status(
     await SettingsBotDB.set_setting(user_id=user_id, settings=settings)
 
     return {"success": True, "desc": "Notification status updated!"}
-

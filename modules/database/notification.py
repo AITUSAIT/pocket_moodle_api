@@ -6,11 +6,11 @@ class NotificationDB(DB):
     @classmethod
     async def get_notification_status(cls, user_id: int) -> NotificationStatus:
         async with cls.pool.acquire() as connection:
-            _ = await connection.fetchrow(
+            row = await connection.fetchrow(
                 "SELECT status, is_newbie_requested, is_update_requested, is_end_date, error_check_token FROM user_notification WHERE user_id = $1",
                 user_id,
             )
-            return NotificationStatus(*_)
+            return NotificationStatus(**row)
 
     @classmethod
     async def set_notification_status(cls, user_id: int, notification_status: NotificationStatus) -> None:

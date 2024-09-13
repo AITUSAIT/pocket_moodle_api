@@ -41,6 +41,27 @@ async def get_user(token: Annotated[str, Query(title="Server API token")]) -> Us
     return user
 
 
+@router.post("/")
+async def insert(
+    token: Annotated[str, Query(title="Server API token")],
+    user_id: Annotated[int, Query(title="The ID of the user to insert to queue")],
+) -> dict[str, Any]:
+    if global_vars.SERVERS == {}:
+        global_vars.SERVERS = await ServerDB.get_servers()
+        for key, val in global_vars.SERVERS.items():
+            global_vars.SERVERS[key] = val
+
+    if token not in global_vars.SERVERS:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    user = await UserDB.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!")
+
+    global_vars.USERS.insert(0, user)
+    return {"success": True, "desc": "User inserted!"}
+
+
 @router.post("/log")
 async def write_log(
     token: Annotated[str, Query(title="Server API token")], user_id: Annotated[int, Form()], log: Annotated[str, Form()]
