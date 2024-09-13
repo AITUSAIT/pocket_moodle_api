@@ -20,3 +20,14 @@ async def get_bot_settings(user_id: Annotated[int, Path(title="The ID of the use
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"no settings found for user {user_id=}")
 
     return settings
+
+
+@router.post("/{user_id}")
+async def set_notification_status(
+    user_id: Annotated[int, Path(title="The ID of the user to set bot settings")],
+    settings: SettingBot,
+):
+    await SettingsBotDB.set_setting(user_id=user_id, settings=settings)
+
+    return {"success": True, "desc": "Notification status updated!"}
+

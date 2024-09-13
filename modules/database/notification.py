@@ -24,7 +24,7 @@ class NotificationDB(DB):
                     is_newbie_requested = $2,
                     is_update_requested = $3,
                     is_end_date = $4,
-                    error_check_token = $5,
+                    error_check_token = $5
                 WHERE
                     user_id = $6
                 """,

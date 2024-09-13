@@ -13,6 +13,16 @@ class SettingsBotDB(DB):
             return SettingBot(*_)
 
     @classmethod
-    async def set_setting(cls, user_id: int, key: str, state: bool) -> None:
+    async def set_setting(cls, user_id: int, settings: SettingBot) -> None:
         async with cls.pool.acquire() as connection:
-            await connection.execute(f"UPDATE user_settings_bot SET {key} = $1 WHERE user_id = $2", state, user_id)
+            await connection.execute(
+                """
+                UPDATE
+                    user_settings_bot
+                SET
+                    status = $1,
+                    notification_grade = $2,
+                    notification_deadline = $3
+                WHERE
+                    user_id = $4
+                """, settings.status, settings.notification_grade, settings.notification_deadline, user_id)

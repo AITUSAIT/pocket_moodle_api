@@ -4,7 +4,7 @@ from fastapi import APIRouter, FastAPI, status
 
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER
 from modules.database.db import DB
-from routers import courses, courses_content, deadlines, grades, groups, health, notifications, queue, users
+from routers import courses, courses_content, deadlines, grades, groups, health, notifications, queue, settings, users
 
 app = FastAPI()
 
@@ -20,6 +20,7 @@ api_router.include_router(courses_content.router)
 api_router.include_router(grades.router)
 api_router.include_router(deadlines.router)
 api_router.include_router(notifications.router)
+api_router.include_router(settings.router)
 api_router.include_router(queue.router)
 app.include_router(api_router)
 
