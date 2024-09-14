@@ -19,10 +19,10 @@ class PydanticBaseModel(BaseModel):
         json_encoders = {datetime: lambda v: v.isoformat()}
 
     def to_json(self) -> str:
-        return self.json()
+        return self.model_dump_json()
 
     def to_dict(self) -> Dict[str, Any]:
-        return self.dict()
+        return self.model_dump()
 
 
 class User(PydanticBaseModel):

@@ -21,6 +21,11 @@ async def get_user(user_id: Annotated[int, Path(title="The ID of the user to get
 
     return user
 
+@router.get("/")
+async def get_users() -> list[User]:
+    user = await UserDB.get_users()
+
+    return user
 
 @router.post("/")
 async def create_user(user_id: Annotated[int, Query(title="The ID of the user to create")]) -> dict[str, Any]:
