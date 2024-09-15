@@ -32,13 +32,15 @@ async def get_user(token: Annotated[str, Query(title="Server API token")]) -> Us
             if global_vars.START_TIME is not None:
                 logging.info(f"{round(time.time() - global_vars.START_TIME, 2)} секунд\n")
             global_vars.START_TIME = time.time()
-            global_vars.USERS = await UserDB.get_users()
-        user = global_vars.USERS.pop(0)
+            global_vars.USERS = [user.user_id for user in await UserDB.get_users()]
+        user_id = global_vars.USERS.pop(0)
+
+        user = await UserDB.get_user(user_id)
+        if not user:
+            continue
 
         if user.has_api_token() and user.is_active_user():
-            break
-
-    return user
+            return user
 
 
 @router.post("/")
@@ -58,7 +60,10 @@ async def insert(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!")
 
-    global_vars.USERS.insert(0, user)
+    while user_id in global_vars.USERS:
+        global_vars.USERS.remove(user_id)
+
+    global_vars.USERS.insert(0, user_id)
     return {"success": True, "desc": "User inserted!"}
 
 

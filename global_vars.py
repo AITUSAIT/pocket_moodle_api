@@ -1,5 +1,5 @@
-from modules.database.models import Server, User
+from modules.database.models import Server
 
 SERVERS: dict[str, Server] = {}
-USERS: list[User] = []
+USERS: list[int] = []
 START_TIME: float | None = None
