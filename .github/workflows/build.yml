@@ -44,7 +44,7 @@ jobs:
         run: |
           cd /home/aitusa/server_side_configs/
           git pull
-          ./reload_pm.sh
+          ./reload_pm.sh pocket-moodle-api ${{ github.event.inputs.docker_tag || (github.event_name == 'release' && 'production') }}
 
       - name: Send Telegram Notify To IT Chat
         if: github.event_name != 'release'
