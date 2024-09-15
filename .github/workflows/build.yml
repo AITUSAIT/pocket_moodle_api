@@ -47,12 +47,14 @@ jobs:
           ./reload_pm.sh pocket-moodle-api ${{ github.event.inputs.docker_tag || (github.event_name == 'release' && 'production') }}
 
       - name: Send Telegram Notify To IT Chat
-        if: github.event_name != 'release'
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_TO_IT }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: 'html'
           message: |
-            ${{ github.actor }} builded and deployed Pocket Moodle API ${{ github.event.inputs.docker_tag }}:
-
-            https://github.com/${{github.repository}}/commit/${{github.sha}}/checks/${{github.run_id}}
+            <b>${{ github.actor }}</b> deployed <b>Pocket Moodle API</b>
+            Environment: <code>${{ github.event.inputs.docker_tag }}</code>
+            Branch: <a href="https://github.com/${{github.repository}}/tree/${{github.ref_name}}">${{github.ref_name}}</a>
+            
+            <a href="https://github.com/${{github.repository}}/commit/${{github.sha}}/checks/${{github.run_id}}">Workflow run</a>
