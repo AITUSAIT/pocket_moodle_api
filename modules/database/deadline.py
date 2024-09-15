@@ -68,7 +68,7 @@ class DeadlineDB(DB):
             deadlines (id, assign_id, name, course_id)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT
-            (id)
+            (id, assign_id)
         DO NOTHING;
         """
         cls.add_query(query, deadline.id, deadline.assign_id, deadline.name, course.course_id)
@@ -89,6 +89,12 @@ class DeadlineDB(DB):
         INSERT INTO
             deadlines_user_pair (user_id, id, submitted, graded, status, due)
         VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT (user_id, id)
+        DO UPDATE SET
+            submitted = EXCLUDED.submitted,
+            graded = EXCLUDED.graded,
+            status = EXCLUDED.status,
+            due = EXCLUDED.due
         """
         cls.add_query(query, user_id, deadline_id, submitted, graded, json.dumps(status), due)
 

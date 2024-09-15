@@ -85,7 +85,14 @@ class CourseDB(DB):
 
     @classmethod
     def set_course_user_pair(cls, user_id: int, course_id: int, active: bool):
-        query = "INSERT INTO courses_user_pair (user_id, course_id, active) VALUES ($1, $2, $3)"
+        query = """
+        INSERT INTO
+            courses_user_pair (user_id, course_id, active)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (user_id, course_id)
+        DO UPDATE SET
+            active = EXCLUDED.active
+        """
         cls.add_query(query, user_id, course_id, active)
 
     @classmethod
