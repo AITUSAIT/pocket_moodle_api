@@ -2,7 +2,10 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Path, Query, status
 
-from modules.database.models import User
+from modules.database.course import CourseDB
+from modules.database.deadline import DeadlineDB
+from modules.database.grade import GradeDB
+from modules.database.models import Course, Deadline, Grade, User
 from modules.database.user import UserDB
 
 router = APIRouter(
@@ -21,11 +24,13 @@ async def get_user(user_id: Annotated[int, Path(title="The ID of the user to get
 
     return user
 
+
 @router.get("/")
 async def get_users() -> list[User]:
     user = await UserDB.get_users()
 
     return user
+
 
 @router.post("/")
 async def create_user(user_id: Annotated[int, Query(title="The ID of the user to create")]) -> dict[str, Any]:
@@ -49,3 +54,61 @@ async def register_moodle(
     await UserDB.register(user_id=user_id, mail=mail, api_token=api_token)
 
     return {"success": True, "desc": "Moodle user registered!"}
+
+
+@router.post("/{user_id}/course")
+async def link_course(
+    user_id: Annotated[int, Path(title="The ID of the user to link")], course: Course
+) -> dict[str, Any]:
+    CourseDB.link_user_with_course(user_id=user_id, course=course)
+
+    return {"success": True, "desc": "Course linked!"}
+
+
+@router.patch("/{user_id}/course")
+async def update_link_with_course(
+    user_id: Annotated[int, Path(title="The ID of the user to update link")], course: Course
+) -> dict[str, Any]:
+    CourseDB.update_user_course_link(user_id=user_id, course=course)
+
+    return {"success": True, "desc": "Course link updated!"}
+
+
+@router.post("/{user_id}/grade")
+async def link_grade(
+    user_id: Annotated[int, Path(title="The ID of the user to link")], course: Course, grade: Grade
+) -> dict[str, Any]:
+    GradeDB.set_grade(user_id=user_id, course_id=course.course_id, grade=grade)
+
+    return {"success": True, "desc": "Grade is linked!"}
+
+
+@router.patch("/{user_id}/grade")
+async def update_link_with_grade(
+    user_id: Annotated[int, Path(title="The ID of the user to update link")], course: Course, grade: Grade
+) -> dict[str, Any]:
+    GradeDB.update_grade(user_id=user_id, course_id=course.course_id, grade=grade)
+
+    return {"success": True, "desc": "Grade link is updated!"}
+
+
+@router.post("/{user_id}/deadline")
+async def link_deadline(
+    user_id: Annotated[int, Path(title="The ID of the user to link")], course: Course, deadline: Deadline
+) -> dict[str, Any]:
+    DeadlineDB.link_user_with_deadline(
+        user_id=user_id,
+        course=course,
+        deadline=deadline,
+    )
+
+    return {"success": True, "desc": "Deadline is linked!"}
+
+
+@router.patch("/{user_id}/deadline")
+async def update_link_with_deadline(
+    user_id: Annotated[int, Path(title="The ID of the user to update link")], course: Course, deadline: Deadline
+) -> dict[str, Any]:
+    DeadlineDB.update_user_deadline_link(user_id=user_id, course=course, deadline=deadline)
+
+    return {"success": True, "desc": "Deadline link is updated!"}

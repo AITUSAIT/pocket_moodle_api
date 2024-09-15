@@ -3,7 +3,10 @@ import asyncio
 from fastapi import APIRouter, FastAPI, status
 
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER
+from modules.database.course import CourseDB
 from modules.database.db import DB
+from modules.database.deadline import DeadlineDB
+from modules.database.grade import GradeDB
 from routers import courses, courses_content, deadlines, grades, groups, health, notifications, queue, settings, users
 
 app = FastAPI()
@@ -28,6 +31,10 @@ app.include_router(api_router)
 async def connect_db() -> None:
     dsn = f"postgresql://{DB_USER}:{DB_PASSWD}@{DB_HOST}:{DB_PORT}/{DB_DB}"
     await DB.connect(dsn)
+
+    await GradeDB.start_commit_thread()
+    await DeadlineDB.start_commit_thread()
+    await CourseDB.start_commit_thread()
 
 
 def on_startup():

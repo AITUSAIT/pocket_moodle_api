@@ -6,7 +6,7 @@ class CourseContentDB(DB):
     @classmethod
     async def get_course_contents(cls, course_id: int) -> dict[str, CourseContent]:
         async with cls.pool.acquire() as connection:
-            contents: list = await connection.fetch(
+            contents = await connection.fetch(
                 """
             SELECT
                 cc.id, cc.name, cc.section
@@ -20,17 +20,20 @@ class CourseContentDB(DB):
             contents.sort(key=lambda x: x[2])
 
             return {
-                str(_[0]): CourseContent(
-                    id=_[0],
-                    name=_[1],
-                    section=_[2],
-                    modules=(await cls.get_course_content_modules(_[0])),
+                str(content[0]): CourseContent(
+                    id=content[0],
+                    name=content[1],
+                    section=content[2],
+                    modules=(await cls.get_course_content_modules(content[0])),
                 )
-                for _ in contents
+                for content in contents
             }
 
     @classmethod
-    async def insert_course_content(cls, content_id: int, course_id: int, name: str, section: int) -> int:
+    async def insert_course_content(cls, course_id: int, name: str, section: int, content_id: int) -> int | None:
+        if not await cls.if_course_content_exist(content_id):
+            return None
+
         async with cls.pool.acquire() as connection:
             content_id = await connection.fetchval(
                 """
@@ -81,16 +84,16 @@ class CourseContentDB(DB):
             )
 
             return {
-                str(_[0]): CourseContentModule(
-                    id=_[0],
-                    url=_[1],
-                    name=_[2],
-                    modplural=_[3],
-                    modname=_[4],
-                    files=(await cls.get_course_content_module_files(_[0])),
-                    urls=(await cls.get_course_content_module_urls(_[0])),
+                str(module[0]): CourseContentModule(
+                    id=module[0],
+                    url=module[1],
+                    name=module[2],
+                    modplural=module[3],
+                    modname=module[4],
+                    files=(await cls.get_course_content_module_files(module[0])),
+                    urls=(await cls.get_course_content_module_urls(module[0])),
                 )
-                for _ in modules
+                for module in modules
             }
 
     @classmethod
@@ -101,15 +104,19 @@ class CourseContentDB(DB):
 
     @classmethod
     async def insert_course_content_module(
-        cls, content_id: int, url: str, name: str, modplural: str, modname: str
-    ) -> int:
+        cls, module_id: int, content_id: int, url: str, name: str, modplural: str, modname: str
+    ) -> int | None:
+        if not await cls.if_course_content_module_exist(module_id):
+            return None
+
         async with cls.pool.acquire() as connection:
             module_id = await connection.fetchval(
                 """
-                INSERT INTO courses_contents_modules (url, name, modplural, modname, courses_contents_id)
-                VALUES ($1, $2, $3, $4, $5)
+                INSERT INTO courses_contents_modules (id, url, name, modplural, modname, courses_contents_id)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING id;
                 """,
+                module_id,
                 url,
                 name,
                 modplural,
@@ -271,12 +278,12 @@ class CourseContentDB(DB):
             )
 
             return {
-                str(_[0]): CourseContentModuleUrl(
-                    id=_[0],
-                    name=_[1],
-                    url=_[2],
+                str(item[0]): CourseContentModuleUrl(
+                    id=item[0],
+                    name=item[1],
+                    url=item[2],
                 )
-                for _ in urls
+                for item in urls
             }
 
     @classmethod

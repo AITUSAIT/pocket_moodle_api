@@ -69,7 +69,9 @@ class UserDB(DB):
     @classmethod
     async def get_users(cls) -> list[User]:
         async with cls.pool.acquire() as connection:
-            users = await connection.fetch("SELECT user_id, api_token, register_date, mail, last_active FROM users WHERE last_active > NOW() - INTERVAL '2 weeks'")
+            users = await connection.fetch(
+                "SELECT user_id, api_token, register_date, mail, last_active FROM users WHERE last_active > NOW() - INTERVAL '2 weeks'"
+            )
             return [
                 User(
                     user_id=user_data[0],
