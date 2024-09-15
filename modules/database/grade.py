@@ -43,10 +43,6 @@ class GradeDB(DB):
         INSERT INTO
             grades (course_id, grade_id, user_id, name, percentage)
         VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (course_id, grade_id, user_id)
-        DO UPDATE SET
-            name = EXCLUDED.name,
-            percentage = EXCLUDED.percentage
         """
         cls.add_query(query, course_id, grade.grade_id, user_id, grade.name, grade.percentage)
 

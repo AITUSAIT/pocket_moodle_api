@@ -3,8 +3,6 @@ import logging
 from typing import Any
 
 from modules.database.db import DB
-from modules.database.deadline import DeadlineDB
-from modules.database.grade import GradeDB
 from modules.database.models import Course
 
 logger = logging.getLogger("uvicorn.error")
@@ -35,7 +33,7 @@ class CourseDB(DB):
             }
 
         async with cls.pool.acquire() as connection:
-            courses = await connection.fetch(
+            rows = await connection.fetch(
                 """
             SELECT
                 c.course_id, c.name, cp.active
@@ -51,21 +49,53 @@ class CourseDB(DB):
                 is_active,
             )
 
-            courses = {
+            rows = {
                 str(course[0]): Course(
                     course_id=course[0],
                     name=course[1],
                     active=course[2],
-                    grades=await GradeDB.get_grades(user_id=user_id, course_id=course[0]),
-                    deadlines=await DeadlineDB.get_deadlines(user_id=user_id, course_id=course[0]),
                 )
-                for course in courses
+                for course in rows
             }
 
             # Update the cache
-            cls._courses_cache[user_id] = courses
+            cls._courses_cache[user_id] = rows
 
-            return courses
+            return rows
+
+    @classmethod
+    async def get_course(cls, user_id: int, course_id: int) -> Course:
+        if user_id in cls._courses_cache:
+            if course_id in cls._courses_cache:
+                return cls._courses_cache[user_id][str(course_id)]
+
+        async with cls.pool.acquire() as connection:
+            row = await connection.fetchrow(
+                """
+            SELECT
+                c.course_id, c.name, cp.active
+            FROM
+                courses c
+            INNER JOIN
+                courses_user_pair cp ON c.course_id = cp.course_id
+            WHERE
+                cp.user_id = $1
+                AND cp.course_id = $2
+            """,
+                user_id,
+                course_id,
+            )
+
+            course = Course(
+                course_id=row[0],
+                name=row[1],
+                active=row[2],
+            )
+
+            # Update the cache
+            cls._courses_cache[user_id][str(course_id)] = course
+
+            return course
 
     @classmethod
     def link_user_with_course(cls, user_id: int, course: Course):
@@ -89,9 +119,6 @@ class CourseDB(DB):
         INSERT INTO
             courses_user_pair (user_id, course_id, active)
         VALUES ($1, $2, $3)
-        ON CONFLICT (user_id, course_id)
-        DO UPDATE SET
-            active = EXCLUDED.active
         """
         cls.add_query(query, user_id, course_id, active)
 

@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query
 
 from modules.database.course import CourseDB
 from modules.database.models import Course
@@ -21,6 +21,16 @@ async def get_courses(
     courses = await CourseDB.get_courses(user_id=user_id, is_active=is_active)
 
     return courses
+
+
+@router.get("/{course_id}")
+async def get_course(
+    course_id: Annotated[int, Path(title="The ID of the course to get course")],
+    user_id: Annotated[int, Query(title="The ID of the user to get courses")],
+) -> Course:
+    course = await CourseDB.get_course(user_id=user_id, course_id=course_id)
+
+    return course
 
 
 @router.get("/is_ready_courses/{user_id}")

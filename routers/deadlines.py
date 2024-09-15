@@ -19,10 +19,5 @@ async def get_deadlines(
     course_id: Annotated[int, Query(title="The ID of the course to get deadlines")],
 ) -> dict[str, Deadline]:
     deadlines = await DeadlineDB.get_deadlines(user_id=user_id, course_id=course_id)
-    if not deadlines:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"deadline for user with {user_id=} for course with {course_id=} is not found!",
-        )
 
     return deadlines
