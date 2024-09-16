@@ -45,6 +45,15 @@ async def create_user(user_id: Annotated[int, Query(title="The ID of the user to
     return {"success": True, "desc": "User created!"}
 
 
+@router.post("/{user_id}/set_active")
+async def set_active(
+    user_id: Annotated[int, Path(title="The ID of the user to register moodle")],
+) -> dict[str, Any]:
+    await UserDB.set_active(user_id)
+
+    return {"success": True, "desc": "User setted as active!"}
+
+
 @router.post("/{user_id}/register_moodle")
 async def register_moodle(
     user_id: Annotated[int, Path(title="The ID of the user to register moodle")],

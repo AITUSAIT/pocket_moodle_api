@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query
 
 from modules.database.deadline import DeadlineDB
 from modules.database.models import Deadline

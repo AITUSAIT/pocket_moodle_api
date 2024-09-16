@@ -97,6 +97,14 @@ class UserDB(DB):
                 )
 
     @classmethod
+    async def set_active(cls, user_id: int) -> None:
+        async with cls.pool.acquire() as connection:
+            async with connection.transaction():
+                await connection.execute(
+                    "UPDATE users SET last_active = $1 WHERE user_id = $2;", datetime.now(), user_id
+                )
+
+    @classmethod
     async def is_admin(cls, user_id: int) -> bool:
         async with cls.pool.acquire() as connection:
             admin_data = await connection.fetchrow("SELECT user_id, status FROM admin WHERE user_id = $1", user_id)
