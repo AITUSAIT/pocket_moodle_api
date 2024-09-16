@@ -86,14 +86,22 @@ class UserDB(DB):
             ]
 
     @classmethod
-    async def register(cls, user_id: int, mail: str, api_token: str) -> None:
+    async def register(cls, user_id: int, mail: str, api_token: str, moodle_id: int) -> None:
         async with cls.pool.acquire() as connection:
             async with connection.transaction():
                 await connection.execute("DELETE FROM courses_user_pair WHERE user_id = $1;", user_id)
                 await connection.execute("DELETE FROM deadlines_user_pair WHERE user_id = $1;", user_id)
                 await connection.execute("DELETE FROM grades WHERE user_id = $1;", user_id)
                 await connection.execute(
-                    "UPDATE users SET api_token = $1, mail = $2 WHERE user_id = $3", api_token, mail, user_id
+                    "UPDATE users SET api_token = $1, mail = $2, moodle_id = $3 WHERE user_id = $3", api_token, mail, moodle_id, user_id
+                )
+
+    @classmethod
+    async def set_active(cls, user_id: int) -> None:
+        async with cls.pool.acquire() as connection:
+            async with connection.transaction():
+                await connection.execute(
+                    "UPDATE users SET last_active = $1 WHERE user_id = $2;", datetime.now(), user_id
                 )
 
     @classmethod

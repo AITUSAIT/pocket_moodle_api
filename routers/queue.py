@@ -9,7 +9,6 @@ from modules.database.models import User
 from modules.database.server import ServerDB
 from modules.database.user import UserDB
 
-
 logger = logging.getLogger("uvicorn.error")
 
 
