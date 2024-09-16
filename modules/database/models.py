@@ -33,6 +33,7 @@ class User(PydanticBaseModel):
     last_active: Optional[datetime]
     is_admin: bool
     is_manager: bool
+    moodle_id: Optional[int]
 
     def is_newbie(self) -> bool:
         return datetime.now() - self.register_date < timedelta(days=14)

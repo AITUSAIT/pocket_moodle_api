@@ -43,7 +43,7 @@ class UserDB(DB):
     async def get_user(cls, user_id: int) -> User | None:
         async with cls.pool.acquire() as connection:
             user_data = await connection.fetchrow(
-                "SELECT user_id, api_token, register_date, mail, last_active FROM users WHERE user_id = $1",
+                "SELECT user_id, api_token, register_date, mail, last_active, moodle_id FROM users WHERE user_id = $1",
                 user_id,
             )
             if not user_data:
@@ -54,6 +54,7 @@ class UserDB(DB):
             register_date = user_data[2]
             mail = user_data[3]
             last_active = user_data[4]
+            moodle_id = user_data[5]
 
             user = User(
                 user_id=user_id,
@@ -63,6 +64,7 @@ class UserDB(DB):
                 last_active=last_active,
                 is_admin=await cls.is_admin(user_id),
                 is_manager=await cls.is_manager(user_id),
+                moodle_id=moodle_id,
             )
             return user
 
@@ -70,7 +72,7 @@ class UserDB(DB):
     async def get_users(cls) -> list[User]:
         async with cls.pool.acquire() as connection:
             users = await connection.fetch(
-                "SELECT user_id, api_token, register_date, mail, last_active FROM users WHERE last_active > NOW() - INTERVAL '2 weeks'"
+                "SELECT user_id, api_token, register_date, mail, last_active, moodle_id FROM users WHERE last_active > NOW() - INTERVAL '2 weeks'"
             )
             return [
                 User(
@@ -81,19 +83,24 @@ class UserDB(DB):
                     last_active=user_data[4],
                     is_admin=await cls.is_admin(user_data[0]),
                     is_manager=await cls.is_manager(user_data[0]),
+                    moodle_id=user_data[5],
                 )
                 for user_data in users
             ]
 
     @classmethod
-    async def register(cls, user_id: int, mail: str, api_token: str) -> None:
+    async def register(cls, user_id: int, mail: str, api_token: str, moodle_id: int) -> None:
         async with cls.pool.acquire() as connection:
             async with connection.transaction():
                 await connection.execute("DELETE FROM courses_user_pair WHERE user_id = $1;", user_id)
                 await connection.execute("DELETE FROM deadlines_user_pair WHERE user_id = $1;", user_id)
                 await connection.execute("DELETE FROM grades WHERE user_id = $1;", user_id)
                 await connection.execute(
-                    "UPDATE users SET api_token = $1, mail = $2 WHERE user_id = $3", api_token, mail, user_id
+                    "UPDATE users SET api_token = $1, mail = $2, moodle_id = $3 WHERE user_id = $4",
+                    api_token,
+                    mail,
+                    moodle_id,
+                    user_id,
                 )
 
     @classmethod
@@ -103,6 +110,12 @@ class UserDB(DB):
                 await connection.execute(
                     "UPDATE users SET last_active = $1 WHERE user_id = $2;", datetime.now(), user_id
                 )
+
+    @classmethod
+    async def set_moodle_id(cls, user_id: int, moodle_id: int) -> None:
+        async with cls.pool.acquire() as connection:
+            async with connection.transaction():
+                await connection.execute("UPDATE users SET moodle_id = $1 WHERE user_id = $2;", moodle_id, user_id)
 
     @classmethod
     async def is_admin(cls, user_id: int) -> bool:
