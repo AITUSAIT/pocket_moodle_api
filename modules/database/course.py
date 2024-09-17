@@ -49,7 +49,7 @@ class CourseDB(DB):
                 is_active,
             )
 
-            rows = {
+            courses = {
                 str(course[0]): Course(
                     course_id=course[0],
                     name=course[1],
@@ -59,9 +59,9 @@ class CourseDB(DB):
             }
 
             # Update the cache
-            cls._courses_cache[user_id] = rows
+            cls._courses_cache[user_id] = courses
 
-            return rows
+            return courses
 
     @classmethod
     async def get_course(cls, user_id: int, course_id: int) -> Course:
