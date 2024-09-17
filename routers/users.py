@@ -54,12 +54,22 @@ async def set_active(
     return {"success": True, "desc": "User setted as active!"}
 
 
+@router.post("/{user_id}/set_moodle_id")
+async def set_moodle_id(
+    user_id: Annotated[int, Path(title="The ID of the user to register moodle")],
+    moodle_id: Annotated[int, Query(title="The ID of the user in moodle")],
+) -> dict[str, Any]:
+    await UserDB.set_moodle_id(user_id, moodle_id)
+
+    return {"success": True, "desc": "Moodle ID of user setted!"}
+
+
 @router.post("/{user_id}/register_moodle")
 async def register_moodle(
     user_id: Annotated[int, Path(title="The ID of the user to register moodle")],
     mail: Annotated[str, Query(title="AITU Moodle mail")],
     api_token: Annotated[str, Query(title="AITU Moodle web service key")],
-    moodle_id: Annotated[str, Query(title="The ID of the user in moodle")],
+    moodle_id: Annotated[int, Query(title="The ID of the user in moodle")],
 ) -> dict[str, Any]:
     await UserDB.register(user_id=user_id, mail=mail, api_token=api_token, moodle_id=moodle_id)
 
