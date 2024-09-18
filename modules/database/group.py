@@ -53,3 +53,10 @@ class GroupDB(DB):
 
             users = [row["user_id"] for row in rows]
             return Group(id=rows[0]["group_id"], tg_id=rows[0]["group_tg_id"], name=rows[0]["group_name"], users=users)
+
+    @classmethod
+    async def delete_group(cls, group_id: int) -> Group | None:
+        async with cls.pool.acquire() as connection:
+            await connection.execute(
+                "DELETE FROM user_to_group WHERE group_id = $1;", group_id
+            )
