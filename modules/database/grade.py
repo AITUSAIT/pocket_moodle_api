@@ -35,9 +35,12 @@ class GradeDB(DB):
     @classmethod
     def set_grade(cls, user_id: int, course_id: int, grade: Grade):
         # Cache the new grade
-        if user_id in cls._grades_cache:
-            if course_id in cls._grades_cache[user_id]:
-                cls._grades_cache[user_id][course_id][str(grade.grade_id)] = grade
+        if user_id not in cls._grades_cache:
+            asyncio.run(cls.get_grades(user_id, course_id))
+        if course_id not in cls._grades_cache[user_id]:
+            asyncio.run(cls.get_grades(user_id, course_id))
+
+        cls._grades_cache[user_id][course_id][str(grade.grade_id)] = grade
 
         query = """
         INSERT INTO
@@ -49,9 +52,12 @@ class GradeDB(DB):
     @classmethod
     def update_grade(cls, user_id: int, course_id: int, grade: Grade):
         # Update the cached grade
-        if user_id in cls._grades_cache:
-            if course_id in cls._grades_cache[user_id]:
-                cls._grades_cache[user_id][course_id][str(grade.grade_id)] = grade
+        if user_id not in cls._grades_cache:
+            asyncio.run(cls.get_grades(user_id, course_id))
+        if course_id not in cls._grades_cache[user_id]:
+            asyncio.run(cls.get_grades(user_id, course_id))
+
+        cls._grades_cache[user_id][course_id][str(grade.grade_id)] = grade
 
         query = "UPDATE grades SET percentage = $1, name = $2 WHERE course_id = $3 and grade_id = $4 and user_id = $5"
         cls.add_query(query, grade.percentage, grade.name, course_id, grade.grade_id, user_id)
