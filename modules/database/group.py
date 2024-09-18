@@ -11,10 +11,10 @@ class GroupDB(DB):
             )
 
     @classmethod
-    async def register(cls, user_id: int, group_tg_id: int) -> None:
+    async def register(cls, user_id: int, group_id: int) -> None:
         async with cls.pool.acquire() as connection:
             await connection.execute(
-                "INSERT INTO user_to_group (user_id, group_tg_id) VALUES ($1, $2);", user_id, group_tg_id
+                "INSERT INTO user_to_group (user_id, group_id) VALUES ($1, $2);", user_id, group_id
             )
 
     @classmethod

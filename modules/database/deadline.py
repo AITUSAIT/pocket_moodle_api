@@ -57,12 +57,12 @@ class DeadlineDB(DB):
             return deadlines
 
     @classmethod
-    def link_user_with_deadline(cls, user_id: int, course: Course, deadline: Deadline):
+    async def link_user_with_deadline(cls, user_id: int, course: Course, deadline: Deadline):
         # Cache the new deadline
         if user_id not in cls._deadlines_cache:
-            asyncio.run(cls.get_deadlines(user_id, course.course_id))
+            await cls.get_deadlines(user_id, course.course_id)
         if course.course_id not in cls._deadlines_cache[user_id]:
-            asyncio.run(cls.get_deadlines(user_id, course.course_id))
+            await cls.get_deadlines(user_id, course.course_id)
 
         cls._deadlines_cache[user_id][course.course_id][str(deadline.id)] = deadline
 
@@ -96,12 +96,12 @@ class DeadlineDB(DB):
         cls.add_query(query, user_id, deadline_id, submitted, graded, json.dumps(status), due)
 
     @classmethod
-    def update_user_deadline_link(cls, user_id: int, course: Course, deadline: Deadline):
+    async def update_user_deadline_link(cls, user_id: int, course: Course, deadline: Deadline):
         # Update the cached deadline
         if user_id not in cls._deadlines_cache:
-            asyncio.run(cls.get_deadlines(user_id, course.course_id))
+            await cls.get_deadlines(user_id, course.course_id)
         if course.course_id not in cls._deadlines_cache[user_id]:
-            asyncio.run(cls.get_deadlines(user_id, course.course_id))
+            await cls.get_deadlines(user_id, course.course_id)
 
         cls._deadlines_cache[user_id][course.course_id][str(deadline.id)] = deadline
 

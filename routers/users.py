@@ -80,7 +80,7 @@ async def register_moodle(
 async def link_course(
     user_id: Annotated[int, Path(title="The ID of the user to link")], course: Course
 ) -> dict[str, Any]:
-    CourseDB.link_user_with_course(user_id=user_id, course=course)
+    await CourseDB.link_user_with_course(user_id=user_id, course=course)
 
     return {"success": True, "desc": "Course linked!"}
 
@@ -89,7 +89,7 @@ async def link_course(
 async def update_link_with_course(
     user_id: Annotated[int, Path(title="The ID of the user to update link")], course: Course
 ) -> dict[str, Any]:
-    CourseDB.update_user_course_link(user_id=user_id, course=course)
+    await CourseDB.update_user_course_link(user_id=user_id, course=course)
 
     return {"success": True, "desc": "Course link updated!"}
 
@@ -98,7 +98,7 @@ async def update_link_with_course(
 async def link_grade(
     user_id: Annotated[int, Path(title="The ID of the user to link")], course: Course, grade: Grade
 ) -> dict[str, Any]:
-    GradeDB.set_grade(user_id=user_id, course_id=course.course_id, grade=grade)
+    await GradeDB.set_grade(user_id=user_id, course_id=course.course_id, grade=grade)
 
     return {"success": True, "desc": "Grade is linked!"}
 
@@ -107,7 +107,7 @@ async def link_grade(
 async def update_link_with_grade(
     user_id: Annotated[int, Path(title="The ID of the user to update link")], course: Course, grade: Grade
 ) -> dict[str, Any]:
-    GradeDB.update_grade(user_id=user_id, course_id=course.course_id, grade=grade)
+    await GradeDB.update_grade(user_id=user_id, course_id=course.course_id, grade=grade)
 
     return {"success": True, "desc": "Grade link is updated!"}
 
@@ -116,7 +116,7 @@ async def update_link_with_grade(
 async def link_deadline(
     user_id: Annotated[int, Path(title="The ID of the user to link")], course: Course, deadline: Deadline
 ) -> dict[str, Any]:
-    DeadlineDB.link_user_with_deadline(
+    await DeadlineDB.link_user_with_deadline(
         user_id=user_id,
         course=course,
         deadline=deadline,
@@ -129,6 +129,6 @@ async def link_deadline(
 async def update_link_with_deadline(
     user_id: Annotated[int, Path(title="The ID of the user to update link")], course: Course, deadline: Deadline
 ) -> dict[str, Any]:
-    DeadlineDB.update_user_deadline_link(user_id=user_id, course=course, deadline=deadline)
+    await DeadlineDB.update_user_deadline_link(user_id=user_id, course=course, deadline=deadline)
 
     return {"success": True, "desc": "Deadline link is updated!"}

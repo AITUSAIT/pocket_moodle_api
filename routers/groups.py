@@ -14,14 +14,8 @@ router = APIRouter(
 
 
 @router.get("/{group_tg_id}")
-async def get_group(group_tg_id: Annotated[int, Path(title="The TG ID of the group to get")]) -> Group:
-    group = await GroupDB.get_group(group_tg_id)
-    if not group:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with tg_id={group_tg_id} is not found!"
-        )
-
-    return group
+async def get_group(group_tg_id: Annotated[int, Path(title="The TG ID of the group to get")]) -> Group | None:
+    return await GroupDB.get_group(group_tg_id)
 
 
 @router.post("/")
@@ -45,6 +39,12 @@ async def group_register_user(
     group_tg_id: Annotated[int, Path(title="The TG ID of the group to register user")],
     user_id: Annotated[int, Query(title="The ID of the user to register in group")],
 ) -> dict[str, Any]:
-    await GroupDB.register(user_id=user_id, group_tg_id=group_tg_id)
+    group = await GroupDB.get_group(group_tg_id)
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with tg_id={group_tg_id} is not found!"
+        )
+
+    await GroupDB.register(user_id=user_id, group_id=group.id)
 
     return {"success": True, "desc": "Group user registered!"}
