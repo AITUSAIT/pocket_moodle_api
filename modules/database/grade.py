@@ -36,9 +36,9 @@ class GradeDB(DB):
     def set_grade(cls, user_id: int, course_id: int, grade: Grade):
         # Cache the new grade
         if user_id not in cls._grades_cache:
-            cls.get_grades(user_id, course_id)
+            asyncio.run(cls.get_grades(user_id, course_id))
         if course_id not in cls._grades_cache[user_id]:
-            cls.get_grades(user_id, course_id)
+            asyncio.run(cls.get_grades(user_id, course_id))
 
         cls._grades_cache[user_id][course_id][str(grade.grade_id)] = grade
 
@@ -53,9 +53,9 @@ class GradeDB(DB):
     def update_grade(cls, user_id: int, course_id: int, grade: Grade):
         # Update the cached grade
         if user_id not in cls._grades_cache:
-            cls.get_grades(user_id, course_id)
+            asyncio.run(cls.get_grades(user_id, course_id))
         if course_id not in cls._grades_cache[user_id]:
-            cls.get_grades(user_id, course_id)
+            asyncio.run(cls.get_grades(user_id, course_id))
 
         cls._grades_cache[user_id][course_id][str(grade.grade_id)] = grade
 
