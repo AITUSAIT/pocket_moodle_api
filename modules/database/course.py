@@ -94,13 +94,18 @@ class CourseDB(DB):
 
             # Update the cache
             cls._courses_cache[user_id][str(course_id)] = course
+            asyncio.create_task(cls.get_courses(user_id, course_id))
 
             return course
 
     @classmethod
     def link_user_with_course(cls, user_id: int, course: Course):
-        if user_id in cls._courses_cache:
-            cls._courses_cache[user_id][str(course.course_id)] = course
+        if user_id not in cls._courses_cache:
+            cls.get_courses(user_id, course.course_id)
+        if course.course_id not in cls._courses_cache[user_id]:
+            cls.get_courses(user_id, course.course_id)
+
+        cls._courses_cache[user_id][str(course.course_id)] = course
 
         query = """
         INSERT INTO
@@ -124,8 +129,12 @@ class CourseDB(DB):
 
     @classmethod
     def update_user_course_link(cls, user_id: int, course: Course):
-        if user_id in cls._courses_cache:
-            cls._courses_cache[user_id][str(course.course_id)] = course
+        if user_id not in cls._courses_cache:
+            cls.get_courses(user_id, course.course_id)
+        if course.course_id not in cls._courses_cache[user_id]:
+            cls.get_courses(user_id, course.course_id)
+
+        cls._courses_cache[user_id][str(course.course_id)] = course
 
         query = "UPDATE courses_user_pair SET active = $1 WHERE course_id = $2 and user_id = $3"
         cls.add_query(query, course.active, course.course_id, user_id)
