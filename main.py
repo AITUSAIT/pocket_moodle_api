@@ -50,6 +50,7 @@ logging_config = {
             "propagate": False,
         },
         "uvicorn.error": {
+            "handlers": ["default"],
             "level": "INFO",
         },
         "uvicorn.access": {
