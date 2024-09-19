@@ -11,12 +11,12 @@ logger = logging.getLogger("uvicorn.error")
 class GradeDB(DB):
     pending_queries_grades: list[tuple[str, tuple[Any, ...]]] = []
     commit_interval: float = 5.0
-    _grades_cache: dict[int, dict[int, dict[str, Grade]]] = {}
+    _grades_cache: dict[int, dict[str, dict[str, Grade]]] = {}
 
     @classmethod
     async def get_grades(cls, user_id, course_id: int) -> dict[str, Grade]:
         if user_id in cls._grades_cache and course_id in cls._grades_cache[user_id]:
-            return cls._grades_cache[user_id][course_id]
+            return cls._grades_cache[user_id][str(course_id)]
 
         async with cls.pool.acquire() as connection:
             rows = await connection.fetch(
@@ -28,7 +28,7 @@ class GradeDB(DB):
 
             if user_id not in cls._grades_cache:
                 cls._grades_cache[user_id] = {}
-            cls._grades_cache[user_id][course_id] = grades
+            cls._grades_cache[user_id][str(course_id)] = grades
 
             return grades
 
@@ -37,10 +37,12 @@ class GradeDB(DB):
         # Cache the new grade
         if user_id not in cls._grades_cache:
             await cls.get_grades(user_id, course_id)
-        if course_id not in cls._grades_cache[user_id]:
+        if str(course_id) not in cls._grades_cache[user_id]:
+            await cls.get_grades(user_id, course_id)
+        if str(grade.grade_id) not in cls._grades_cache[user_id][str(course_id)]:
             await cls.get_grades(user_id, course_id)
 
-        cls._grades_cache[user_id][course_id][str(grade.grade_id)] = grade
+        cls._grades_cache[user_id][str(course_id)][str(grade.grade_id)] = grade
 
         query = """
         INSERT INTO
@@ -54,10 +56,12 @@ class GradeDB(DB):
         # Update the cached grade
         if user_id not in cls._grades_cache:
             await cls.get_grades(user_id, course_id)
-        if course_id not in cls._grades_cache[user_id]:
+        if str(course_id) not in cls._grades_cache[user_id]:
+            await cls.get_grades(user_id, course_id)
+        if str(grade.grade_id) not in cls._grades_cache[user_id][str(course_id)]:
             await cls.get_grades(user_id, course_id)
 
-        cls._grades_cache[user_id][course_id][str(grade.grade_id)] = grade
+        cls._grades_cache[user_id][str(course_id)][str(grade.grade_id)] = grade
 
         query = "UPDATE grades SET percentage = $1, name = $2 WHERE course_id = $3 and grade_id = $4 and user_id = $5"
         cls.add_query(query, grade.percentage, grade.name, course_id, grade.grade_id, user_id)

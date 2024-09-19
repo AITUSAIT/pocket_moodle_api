@@ -102,7 +102,7 @@ class CourseDB(DB):
     async def link_user_with_course(cls, user_id: int, course: Course):
         if user_id not in cls._courses_cache:
             await cls.get_courses(user_id)
-        if course.course_id not in cls._courses_cache[user_id]:
+        if str(course.course_id) not in cls._courses_cache[user_id]:
             await cls.get_courses(user_id)
 
         cls._courses_cache[user_id][str(course.course_id)] = course
@@ -131,7 +131,7 @@ class CourseDB(DB):
     async def update_user_course_link(cls, user_id: int, course: Course):
         if user_id not in cls._courses_cache:
             await cls.get_courses(user_id)
-        if course.course_id not in cls._courses_cache[user_id]:
+        if str(course.course_id) not in cls._courses_cache[user_id]:
             await cls.get_courses(user_id)
 
         cls._courses_cache[user_id][str(course.course_id)] = course

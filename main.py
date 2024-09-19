@@ -1,5 +1,4 @@
 import asyncio
-import logging.config
 
 from fastapi import APIRouter, FastAPI, Request, status
 from fastapi.responses import PlainTextResponse

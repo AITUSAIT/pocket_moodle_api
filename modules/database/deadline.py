@@ -13,12 +13,12 @@ logger = logging.getLogger("uvicorn.error")
 class DeadlineDB(DB):
     pending_queries_deadlines: list[tuple[str, tuple[Any, ...]]] = []
     commit_interval: float = 5.0
-    _deadlines_cache: dict[int, dict[int, dict[str, Deadline]]] = {}
+    _deadlines_cache: dict[int, dict[str, dict[str, Deadline]]] = {}
 
     @classmethod
     async def get_deadlines(cls, user_id, course_id: int) -> dict[str, Deadline]:
-        if user_id in cls._deadlines_cache and course_id in cls._deadlines_cache[user_id]:
-            return cls._deadlines_cache[user_id][course_id]
+        if user_id in cls._deadlines_cache and str(course_id) in cls._deadlines_cache[user_id]:
+            return cls._deadlines_cache[user_id][str(course_id)]
 
         async with cls.pool.acquire() as connection:
             rows = await connection.fetch(
@@ -52,7 +52,7 @@ class DeadlineDB(DB):
             # Update the cache
             if user_id not in cls._deadlines_cache:
                 cls._deadlines_cache[user_id] = {}
-            cls._deadlines_cache[user_id][course_id] = deadlines
+            cls._deadlines_cache[user_id][str(course_id)] = deadlines
 
             return deadlines
 
@@ -61,10 +61,12 @@ class DeadlineDB(DB):
         # Cache the new deadline
         if user_id not in cls._deadlines_cache:
             await cls.get_deadlines(user_id, course.course_id)
-        if course.course_id not in cls._deadlines_cache[user_id]:
+        if str(course.course_id) not in cls._deadlines_cache[user_id]:
+            await cls.get_deadlines(user_id, course.course_id)
+        if str(deadline.id) not in cls._deadlines_cache[user_id][str(course.course_id)]:
             await cls.get_deadlines(user_id, course.course_id)
 
-        cls._deadlines_cache[user_id][course.course_id][str(deadline.id)] = deadline
+        cls._deadlines_cache[user_id][str(course.course_id)][str(deadline.id)] = deadline
 
         query = """
         INSERT INTO
@@ -100,10 +102,12 @@ class DeadlineDB(DB):
         # Update the cached deadline
         if user_id not in cls._deadlines_cache:
             await cls.get_deadlines(user_id, course.course_id)
-        if course.course_id not in cls._deadlines_cache[user_id]:
+        if str(course.course_id) not in cls._deadlines_cache[user_id]:
+            await cls.get_deadlines(user_id, course.course_id)
+        if str(deadline.id) not in cls._deadlines_cache[user_id][str(course.course_id)]:
             await cls.get_deadlines(user_id, course.course_id)
 
-        cls._deadlines_cache[user_id][course.course_id][str(deadline.id)] = deadline
+        cls._deadlines_cache[user_id][str(course.course_id)][str(deadline.id)] = deadline
 
         query = """
         UPDATE
