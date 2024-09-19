@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PlainSerializer, PlainValidator, errors
+from typing_extensions import Annotated
 
 
 class UserJSONEncoder:
@@ -12,6 +13,19 @@ class UserJSONEncoder:
         return super().default(obj)  # type: ignore
 
     # pylint: enable=no-member
+
+
+def hex_bytes_validator(val: Any) -> bytes:
+    if isinstance(val, bytes):
+        return val
+    if isinstance(val, bytearray):
+        return bytes(val)
+    if isinstance(val, str):
+        return bytes.fromhex(val)
+    raise errors.BytesError()
+
+
+HexBytes = Annotated[bytes, PlainValidator(hex_bytes_validator), PlainSerializer(lambda v: v.hex())]
 
 
 class PydanticBaseModel(BaseModel):
@@ -157,7 +171,7 @@ class CourseContentModuleFile(PydanticBaseModel):
     timecreated: int
     timemodified: int
     mimetype: str
-    bytes: bytes
+    bytes: HexBytes
 
 
 class CourseContentModuleUrl(PydanticBaseModel):
