@@ -1,4 +1,5 @@
 import asyncio
+import logging.config
 
 from fastapi import APIRouter, FastAPI, status
 
@@ -26,6 +27,40 @@ api_router.include_router(notifications.router)
 api_router.include_router(settings.router)
 api_router.include_router(queue.router)
 app.include_router(api_router)
+
+
+logging_config = {
+    "version": 1,
+    "formatters": {
+        "default": {
+            "format": "%(asctime)s - %(levelname)s - %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    "handlers": {
+        "default": {
+            "formatter": "default",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "uvicorn": {
+            "handlers": ["default"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "uvicorn.error": {
+            "level": "INFO",
+        },
+        "uvicorn.access": {
+            "handlers": ["default"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
+
+logging.config.dictConfig(logging_config)
 
 
 async def connect_db() -> None:
