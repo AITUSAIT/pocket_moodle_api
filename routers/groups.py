@@ -48,3 +48,16 @@ async def group_register_user(
     await GroupDB.register(user_id=user_id, group_id=group.id)
 
     return {"success": True, "desc": "Group user registered!"}
+
+
+@router.delete("/{group_tg_id}")
+async def delete_group(group_tg_id: Annotated[int, Path(title="The TG ID of the group to get")]) -> dict[str, Any]:
+    group = await GroupDB.get_group(group_tg_id)
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with tg_id={group_tg_id} is not found!"
+        )
+
+    await GroupDB.delete_group(group.id)
+
+    return {"success": True, "desc": "Group deleted!"}

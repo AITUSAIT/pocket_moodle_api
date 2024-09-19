@@ -13,9 +13,7 @@ class GroupDB(DB):
     @classmethod
     async def register(cls, user_id: int, group_id: int) -> None:
         async with cls.pool.acquire() as connection:
-            await connection.execute(
-                "INSERT INTO user_to_group (user_id, group_id) VALUES ($1, $2);", user_id, group_id
-            )
+            await connection.execute("INSERT INTO user_to_group (user_id, group_id) VALUES ($1, $2);", user_id, group_id)
 
     @classmethod
     async def get_group(cls, group_tg_id: int) -> Group | None:
@@ -53,3 +51,8 @@ class GroupDB(DB):
 
             users = [row["user_id"] for row in rows]
             return Group(id=rows[0]["group_id"], tg_id=rows[0]["group_tg_id"], name=rows[0]["group_name"], users=users)
+
+    @classmethod
+    async def delete_group(cls, group_id: int):
+        async with cls.pool.acquire() as connection:
+            await connection.execute("DELETE FROM users_groups WHERE id = $1;", group_id)
