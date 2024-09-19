@@ -34,19 +34,24 @@
         }
     },
     "loggers": {
-        "aiohttp.access": {
+        "custom": {
+            "handlers": ["stdout", "file", "file_debug"],
+            "level": "INFO",
+            "propagate": true
+        },
+        "uvicorn": {
             "handlers": ["file_debug"],
             "level": "DEBUG",
             "propagate": true
         },
-        "custom": {
-            "handlers": ["stdout", "file"],
-            "level": "INFO",
+        "uvicorn.error": {
+            "handlers": ["file", "file_debug"],
+            "level": "ERROR",
             "propagate": true
         },
-        "aiogram.dispatcher.dispatcher": {
-            "handlers": ["stdout", "file", "file_debug"],
-            "level": "INFO",
+        "uvicorn.access": {
+            "handlers": ["file_debug"],
+            "level": "DEBUG",
             "propagate": true
         }
     }

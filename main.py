@@ -1,16 +1,25 @@
 import asyncio
 import logging.config
 
-from fastapi import APIRouter, FastAPI, status
+from fastapi import APIRouter, FastAPI, Request, status
+from fastapi.responses import PlainTextResponse
 
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER
 from modules.database.course import CourseDB
 from modules.database.db import DB
 from modules.database.deadline import DeadlineDB
 from modules.database.grade import GradeDB
+from modules.logger import Logger
 from routers import courses, courses_content, deadlines, grades, groups, health, notifications, queue, settings, users
 
 app = FastAPI()
+
+
+@app.exception_handler(500)
+async def validation_exception_handler(request: Request, exc: BaseException):
+    Logger.logger.error(f"{request.method} {request.url} - {str(exc)}", exc_info=True)
+    return PlainTextResponse(str(exc), status_code=500)
+
 
 api_router = APIRouter(
     prefix="/api",
@@ -29,12 +38,7 @@ api_router.include_router(queue.router)
 app.include_router(api_router)
 
 
-uvicorn = logging.getLogger("uvicorn")
-uvicorn.disabled = True
-uvicorn_error = logging.getLogger("uvicorn.error")
-uvicorn_error.disabled = True
-uvicorn_access = logging.getLogger("uvicorn.access")
-uvicorn_access.disabled = True
+Logger.load_config()
 
 
 async def connect_db() -> None:
