@@ -29,39 +29,12 @@ api_router.include_router(queue.router)
 app.include_router(api_router)
 
 
-logging_config = {
-    "version": 1,
-    "formatters": {
-        "default": {
-            "format": "%(asctime)s - %(levelname)s - %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-    },
-    "handlers": {
-        "default": {
-            "formatter": "default",
-            "class": "logging.StreamHandler",
-        },
-    },
-    "loggers": {
-        "uvicorn": {
-            "handlers": ["default"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "uvicorn.error": {
-            "handlers": ["default"],
-            "level": "INFO",
-        },
-        "uvicorn.access": {
-            "handlers": ["default"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-    },
-}
-
-logging.config.dictConfig(logging_config)
+uvicorn = logging.getLogger("uvicorn")
+uvicorn.disabled = True
+uvicorn_error = logging.getLogger("uvicorn.error")
+uvicorn_error.disabled = True
+uvicorn_access = logging.getLogger("uvicorn.access")
+uvicorn_access.disabled = True
 
 
 async def connect_db() -> None:

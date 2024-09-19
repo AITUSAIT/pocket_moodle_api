@@ -1,4 +1,3 @@
-import logging
 import time
 from typing import Annotated, Any
 
@@ -8,9 +7,7 @@ import global_vars
 from modules.database.models import User
 from modules.database.server import ServerDB
 from modules.database.user import UserDB
-
-logger = logging.getLogger("uvicorn.error")
-
+from modules.logger import Logger
 
 router = APIRouter(
     prefix="/queue",
@@ -33,7 +30,7 @@ async def get_user(token: Annotated[str, Query(title="Server API token")]) -> Us
     while 1:
         if global_vars.USERS == []:
             if global_vars.START_TIME is not None:
-                logger.info(f"{round(time.time() - global_vars.START_TIME, 2)} секунд\n")
+                Logger.logger.info(f"{round(time.time() - global_vars.START_TIME, 2)} секунд\n")
             global_vars.START_TIME = time.time()
             global_vars.USERS = [user.user_id for user in await UserDB.get_users()]
         user_id = global_vars.USERS.pop(0)
@@ -84,5 +81,5 @@ async def write_log(
 
     server = global_vars.SERVERS[token]
 
-    logger.info(f"{user_id} - {log} - {server.name}")
+    Logger.logger.info(f"{user_id} - {log} - {server.name}")
     return {"success": True, "desc": "Log writed!"}
