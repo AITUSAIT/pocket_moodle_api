@@ -38,9 +38,6 @@ api_router.include_router(queue.router)
 app.include_router(api_router)
 
 
-Logger.load_config()
-
-
 async def connect_db() -> None:
     dsn = f"postgresql://{DB_USER}:{DB_PASSWD}@{DB_HOST}:{DB_PORT}/{DB_DB}"
     await DB.connect(dsn)
@@ -51,6 +48,7 @@ async def connect_db() -> None:
 
 
 def on_startup():
+    Logger.load_config()
     loop = asyncio.get_event_loop()
     loop.create_task(connect_db())
 
