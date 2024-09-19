@@ -6,7 +6,7 @@ class CourseContentDB(DB):
     @classmethod
     async def get_course_contents(cls, course_id: int) -> dict[str, CourseContent]:
         async with cls.pool.acquire() as connection:
-            contents = await connection.fetch(
+            rows = await connection.fetch(
                 """
             SELECT
                 cc.id, cc.name, cc.section
@@ -17,7 +17,7 @@ class CourseContentDB(DB):
             """,
                 course_id,
             )
-            contents.sort(key=lambda x: x[2])
+            rows.sort(key=lambda x: x[2])
 
             return {
                 str(content[0]): CourseContent(
@@ -26,7 +26,7 @@ class CourseContentDB(DB):
                     section=content[2],
                     modules=(await cls.get_course_content_modules(content[0])),
                 )
-                for content in contents
+                for content in rows
             }
 
     @classmethod
@@ -90,8 +90,6 @@ class CourseContentDB(DB):
                     name=module[2],
                     modplural=module[3],
                     modname=module[4],
-                    files=(await cls.get_course_content_module_files(module[0])),
-                    urls=(await cls.get_course_content_module_urls(module[0])),
                 )
                 for module in modules
             }
