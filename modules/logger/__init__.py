@@ -1,12 +1,11 @@
 import json
 import logging.config
-from typing import Any, Mapping
+from typing import Any
 
 
 class Logger(logging.Logger):
     _config_loaded = False
     _config: dict[str, Any] = {}
-    logger: logging.Logger
 
     @classmethod
     def load_config(cls) -> None:
@@ -20,4 +19,3 @@ class Logger(logging.Logger):
             except json.JSONDecodeError:
                 print("Error: Invalid JSON format in config file")
             logging.config.dictConfig(cls._config)
-            cls.logger = logging.getLogger("custom")

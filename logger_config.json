@@ -2,57 +2,22 @@
     "version": 1,
     "disable_existing_loggers": false,
     "formatters": {
-        "custom": {
-            "format": "{asctime} - {levelname} - {message}",
-            "style": "{",
-            "datefmt": "%d/%m %H:%M:%S"
+        "json": {
+            "format": "{\"time\": \"%(asctime)s\", \"logger_name\": \"%(name)s\", \"level\": \"%(levelname)s\", \"message\": \"%(message)s\"}",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
         }
     },
     "handlers": {
-        "stdout": {
-            "level": "INFO",
+        "console": {
             "class": "logging.StreamHandler",
-            "formatter": "custom"
-        },
-        "file": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "logs.log",
-            "formatter": "custom",
-            "mode": "w",
-            "maxBytes": 10485760,
-            "backupCount": 2
-        },
-        "file_debug": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "debug.log",
-            "formatter": "custom",
-            "mode": "w",
-            "maxBytes": 10485760,
-            "backupCount": 2
+            "formatter": "json"
         }
     },
     "loggers": {
-        "custom": {
-            "handlers": ["stdout", "file", "file_debug"],
-            "level": "INFO",
-            "propagate": true
-        },
-        "uvicorn": {
-            "handlers": ["file_debug"],
+        "queue": {
             "level": "DEBUG",
-            "propagate": true
-        },
-        "uvicorn.error": {
-            "handlers": ["file", "file_debug"],
-            "level": "ERROR",
-            "propagate": true
-        },
-        "uvicorn.access": {
-            "handlers": ["file_debug"],
-            "level": "DEBUG",
-            "propagate": true
+            "handlers": ["console"],
+            "propagate": false
         }
     }
 }

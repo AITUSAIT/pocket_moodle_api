@@ -1,7 +1,6 @@
 import asyncio
 
-from fastapi import APIRouter, FastAPI, Request, status
-from fastapi.responses import PlainTextResponse
+from fastapi import APIRouter, FastAPI, status
 
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER
 from modules.database.course import CourseDB
@@ -12,13 +11,6 @@ from modules.logger import Logger
 from routers import courses, courses_content, deadlines, grades, groups, health, notifications, queue, settings, users
 
 app = FastAPI()
-
-
-@app.exception_handler(500)
-async def validation_exception_handler(request: Request, exc: BaseException):
-    Logger.logger.error(f"{request.method} {request.url} - {str(exc)}", exc_info=True)
-    return PlainTextResponse(str(exc), status_code=500)
-
 
 api_router = APIRouter(
     prefix="/api",
