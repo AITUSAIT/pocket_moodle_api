@@ -1,6 +1,9 @@
 from datetime import datetime
 
+from modules.database.course import CourseDB
 from modules.database.db import DB
+from modules.database.deadline import DeadlineDB
+from modules.database.grade import GradeDB
 from modules.database.models import User
 
 
@@ -93,8 +96,11 @@ class UserDB(DB):
         async with cls.pool.acquire() as connection:
             async with connection.transaction():
                 await connection.execute("DELETE FROM courses_user_pair WHERE user_id = $1;", user_id)
+                del CourseDB._courses_cache[user_id]  # pylint: disable=protected-access
                 await connection.execute("DELETE FROM deadlines_user_pair WHERE user_id = $1;", user_id)
+                del GradeDB._grades_cache[user_id]  # pylint: disable=protected-access
                 await connection.execute("DELETE FROM grades WHERE user_id = $1;", user_id)
+                del DeadlineDB._deadlines_cache[user_id]  # pylint: disable=protected-access
                 await connection.execute(
                     "UPDATE users SET api_token = $1, mail = $2, moodle_id = $3 WHERE user_id = $4",
                     api_token,
