@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from cachetools import TTLCache
+
 from modules.database.course import CourseDB
 from modules.database.db import DB
 from modules.database.deadline import DeadlineDB
@@ -8,6 +10,8 @@ from modules.database.models import User
 
 
 class UserDB(DB):
+    _users_cache: TTLCache[int, User] = TTLCache(maxsize=100, ttl=600)
+
     @classmethod
     async def create_user(cls, user_id: int) -> None:
         user_data = (user_id, None, datetime.now())
@@ -44,20 +48,23 @@ class UserDB(DB):
 
     @classmethod
     async def get_user(cls, user_id: int) -> User | None:
+        if user_id in cls._users_cache:
+            return cls._users_cache[user_id]
+
         async with cls.pool.acquire() as connection:
-            user_data = await connection.fetchrow(
+            row = await connection.fetchrow(
                 "SELECT user_id, api_token, register_date, mail, last_active, moodle_id FROM users WHERE user_id = $1",
                 user_id,
             )
-            if not user_data:
+            if not row:
                 return None
 
-            user_id = user_data[0]
-            api_token = user_data[1]
-            register_date = user_data[2]
-            mail = user_data[3]
-            last_active = user_data[4]
-            moodle_id = user_data[5]
+            user_id = row[0]
+            api_token = row[1]
+            register_date = row[2]
+            mail = row[3]
+            last_active = row[4]
+            moodle_id = row[5]
 
             user = User(
                 user_id=user_id,
@@ -69,6 +76,7 @@ class UserDB(DB):
                 is_manager=await cls.is_manager(user_id),
                 moodle_id=moodle_id,
             )
+            cls._users_cache[user_id] = user
             return user
 
     @classmethod
@@ -95,11 +103,13 @@ class UserDB(DB):
     async def register(cls, user_id: int, mail: str, api_token: str, moodle_id: int) -> None:
         async with cls.pool.acquire() as connection:
             async with connection.transaction():
-                if user_id in CourseDB._courses_cache:
+                if user_id in cls._users_cache:  # pylint: disable=protected-access
+                    del cls._users_cache[user_id]  # pylint: disable=protected-access
+                if user_id in CourseDB._courses_cache:  # pylint: disable=protected-access
                     del CourseDB._courses_cache[user_id]  # pylint: disable=protected-access
-                if user_id in GradeDB._grades_cache:
+                if user_id in GradeDB._grades_cache:  # pylint: disable=protected-access
                     del GradeDB._grades_cache[user_id]  # pylint: disable=protected-access
-                if user_id in DeadlineDB._deadlines_cache:
+                if user_id in DeadlineDB._deadlines_cache:  # pylint: disable=protected-access
                     del DeadlineDB._deadlines_cache[user_id]  # pylint: disable=protected-access
                 await connection.execute("DELETE FROM courses_user_pair WHERE user_id = $1;", user_id)
                 await connection.execute("DELETE FROM deadlines_user_pair WHERE user_id = $1;", user_id)
@@ -111,9 +121,17 @@ class UserDB(DB):
                     moodle_id,
                     user_id,
                 )
+        user = await cls.get_user(user_id)
+        if user:
+            user.api_token = api_token
+            user.mail = mail
+            user.moodle_id = moodle_id
 
     @classmethod
     async def set_active(cls, user_id: int) -> None:
+        if user_id in cls._users_cache:
+            cls._users_cache[user_id].last_active = datetime.now()
+
         async with cls.pool.acquire() as connection:
             async with connection.transaction():
                 await connection.execute(
@@ -122,6 +140,9 @@ class UserDB(DB):
 
     @classmethod
     async def set_moodle_id(cls, user_id: int, moodle_id: int) -> None:
+        if user_id in cls._users_cache:
+            cls._users_cache[user_id].moodle_id = moodle_id
+
         async with cls.pool.acquire() as connection:
             async with connection.transaction():
                 await connection.execute("UPDATE users SET moodle_id = $1 WHERE user_id = $2;", moodle_id, user_id)

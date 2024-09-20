@@ -1,5 +1,5 @@
 fastapi[standard]==0.114.0
-async-lru==2.0.2
 asyncpg==0.28.0
 python-dotenv==1.0.0
 pytz==2024.1
+cachetools==5.5.0
