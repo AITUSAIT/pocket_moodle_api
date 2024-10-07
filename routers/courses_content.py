@@ -1,6 +1,8 @@
+import io
 from typing import Annotated
-
-from fastapi import APIRouter, Path
+import chardet
+from fastapi import APIRouter, Path, Response
+from fastapi.responses import StreamingResponse
 
 from modules.database.course_contents import CourseContentDB
 from modules.database.models import CourseContent, CourseContentModule, CourseContentModuleFile, CourseContentModuleUrl
@@ -39,3 +41,12 @@ async def get_course_content_module_urls(
     module_id: Annotated[int, Path(title="The ID of the module")]
 ) -> dict[str, CourseContentModuleUrl]:
     return await CourseContentDB.get_course_content_module_urls(module_id)
+
+
+@router.get("/{course_id}/modules/{module_id}/files/{file_id}/bytes")
+async def get_course_content_module_file_bytes(
+    file_id: Annotated[int, Path(title="The ID of the file")]
+) -> StreamingResponse:
+    file_bytes = await CourseContentDB.get_course_content_module_files_by_fileid(file_id)
+    return StreamingResponse(io.BytesIO(file_bytes), media_type="application/octet-stream")
+

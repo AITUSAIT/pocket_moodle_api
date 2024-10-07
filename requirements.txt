@@ -3,3 +3,4 @@ asyncpg==0.28.0
 python-dotenv==1.0.0
 pytz==2024.1
 cachetools==5.5.0
+chardet==5.2.0

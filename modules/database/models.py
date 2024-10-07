@@ -169,7 +169,6 @@ class CourseContentModuleFile(PydanticBaseModel):
     timecreated: int
     timemodified: int
     mimetype: str
-    bytes: HexBytes
 
 
 class CourseContentModuleUrl(PydanticBaseModel):

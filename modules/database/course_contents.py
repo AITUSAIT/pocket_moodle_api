@@ -145,7 +145,7 @@ class CourseContentDB(DB):
             files = await connection.fetch(
                 """
             SELECT
-                f.id, f.filename, f.filesize, f.fileurl, f.timecreated, f.timemodified, f.mimetype, f.bytes
+                f.id, f.filename, f.filesize, f.fileurl, f.timecreated, f.timemodified, f.mimetype
             FROM
                 courses_contents_modules_files f
             WHERE
@@ -163,18 +163,17 @@ class CourseContentDB(DB):
                     timecreated=_[4],
                     timemodified=_[5],
                     mimetype=_[6],
-                    bytes=_[7],
                 )
                 for _ in files
             }
 
     @classmethod
-    async def get_course_content_module_files_by_fileid(cls, file_id: int) -> CourseContentModuleFile:
+    async def get_course_content_module_files_by_fileid(cls, file_id: int) -> bytes | None:
         async with cls.pool.acquire() as connection:
-            file = await connection.fetchrow(
-                """
+            row = await connection.fetchrow(
+            """
             SELECT
-                f.id, f.filename, f.filesize, f.fileurl, f.timecreated, f.timemodified, f.mimetype, f.bytes
+                f.bytes
             FROM
                 courses_contents_modules_files f
             WHERE
@@ -183,16 +182,7 @@ class CourseContentDB(DB):
                 file_id,
             )
 
-            return CourseContentModuleFile(
-                id=file[0],
-                filename=file[1],
-                filesize=file[2],
-                fileurl=file[3],
-                timecreated=file[4],
-                timemodified=file[5],
-                mimetype=file[6],
-                bytes=file[7],
-            )
+            return row[0] if row else None
 
     @classmethod
     async def if_course_content_module_file_exist(cls, fileurl: str) -> bool:
