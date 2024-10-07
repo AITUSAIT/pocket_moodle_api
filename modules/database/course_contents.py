@@ -171,7 +171,7 @@ class CourseContentDB(DB):
     async def get_course_content_module_files_by_fileid(cls, file_id: int) -> bytes | None:
         async with cls.pool.acquire() as connection:
             row = await connection.fetchrow(
-            """
+                """
             SELECT
                 f.bytes
             FROM

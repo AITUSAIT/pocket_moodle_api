@@ -1,7 +1,7 @@
 import io
 from typing import Annotated
-import chardet
-from fastapi import APIRouter, Path, Response
+
+from fastapi import APIRouter, HTTPException, Path, status
 from fastapi.responses import StreamingResponse
 
 from modules.database.course_contents import CourseContentDB
@@ -48,5 +48,7 @@ async def get_course_content_module_file_bytes(
     file_id: Annotated[int, Path(title="The ID of the file")]
 ) -> StreamingResponse:
     file_bytes = await CourseContentDB.get_course_content_module_files_by_fileid(file_id)
-    return StreamingResponse(io.BytesIO(file_bytes), media_type="application/octet-stream")
+    if not file_bytes:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"File with {file_id=} is not found!")
 
+    return StreamingResponse(io.BytesIO(file_bytes), media_type="application/octet-stream")
