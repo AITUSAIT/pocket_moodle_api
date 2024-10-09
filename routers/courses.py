@@ -37,3 +37,9 @@ async def get_course(
 async def is_ready_courses(user_id: int) -> dict[str, Any]:
     is_ready = await CourseDB.is_ready_courses(user_id=user_id)
     return {"success": True, "response": {"is_ready_courses": is_ready}}
+
+
+@router.post("/")
+async def update_course(course: Course) -> dict[str, Any]:
+    await CourseDB.update_course(course)
+    return {"success": True}

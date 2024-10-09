@@ -2,7 +2,6 @@ import io
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Path, Response, status
-from fastapi.responses import StreamingResponse
 
 from modules.database.course_contents import CourseContentDB
 from modules.database.models import CourseContent, CourseContentModule, CourseContentModuleFile, CourseContentModuleUrl
@@ -53,14 +52,13 @@ async def get_course_content_module_urls(
 @router.get("/{course_id}/modules/{module_id}/files/{file_id}/bytes")
 async def get_course_content_module_file_bytes(
     module_id: Annotated[int, Path(title="The ID of the module")],
-    file_id: Annotated[int, Path(title="The ID of the file")]
-) -> RawResponse:
+    file_id: Annotated[int, Path(title="The ID of the file")],
+) -> Response:
     files = await CourseContentDB.get_course_content_module_files(module_id)
     file = [file for file in files.values() if file_id == file.id][0]
     file_bytes = await CourseContentDB.get_course_content_module_files_by_fileid(file_id)
     if not file_bytes:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"File with {file_id=} is not found!")
 
-    headers = {'Content-Disposition': f'inline; filename="{file.filename}"',"content-type": "application/octet-stream"}
+    headers = {"Content-Disposition": f'inline; filename="{file.filename}"', "content-type": "application/octet-stream"}
     return Response(io.BytesIO(file_bytes).getvalue(), headers=headers, media_type=file.mimetype)
-    # return StreamingResponse(io.BytesIO(file_bytes), media_type=file.mimetype)

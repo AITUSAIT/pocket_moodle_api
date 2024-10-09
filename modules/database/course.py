@@ -36,7 +36,7 @@ class CourseDB(DB):
             rows = await connection.fetch(
                 """
             SELECT
-                c.course_id, c.name, cp.active
+                c.course_id, c.name, cp.active, c.teacher_name
             FROM
                 courses c
             INNER JOIN
@@ -54,6 +54,7 @@ class CourseDB(DB):
                     course_id=course[0],
                     name=course[1],
                     active=course[2],
+                    teacher_name=course[3],
                 )
                 for course in rows
             }
@@ -73,7 +74,7 @@ class CourseDB(DB):
             row = await connection.fetchrow(
                 """
             SELECT
-                c.course_id, c.name, cp.active
+                c.course_id, c.name, cp.active, c.teacher_name
             FROM
                 courses c
             INNER JOIN
@@ -90,6 +91,7 @@ class CourseDB(DB):
                 course_id=row[0],
                 name=row[1],
                 active=row[2],
+                teacher_name=row[3],
             )
 
             # Update the cache
@@ -126,6 +128,15 @@ class CourseDB(DB):
         VALUES ($1, $2, $3)
         """
         cls.add_query(query, user_id, course_id, active)
+
+    @classmethod
+    async def update_course(cls, course: Course):
+        for courses in cls._courses_cache.values():
+            if str(course.course_id) in courses:
+                courses[str(course.course_id)] = course
+
+        query = "UPDATE courses SET name = $1, teacher_name = $2 WHERE course_id = $3"
+        cls.add_query(query, course.name, course.teacher_name, course.course_id)
 
     @classmethod
     async def update_user_course_link(cls, user_id: int, course: Course):
