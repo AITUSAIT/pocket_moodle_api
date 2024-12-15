@@ -16,6 +16,21 @@ class DeadlineDB(DB):
     _deadlines_cache: dict[int, dict[str, dict[str, Deadline]]] = {}
 
     @classmethod
+    async def delete_deadline(cls, deadline_id: int):
+        for user_id, course in cls._deadlines_cache.items():
+            for course_id, _ in course.items():
+                cls._deadlines_cache[user_id][course_id].pop(str(deadline_id))
+
+        query = """
+        DELETE from deadlines where id = $1
+        """
+        cls.add_query(query, deadline_id)
+        query = """
+        DELETE from deadlines_user_pair where id = $1
+        """
+        cls.add_query(query, deadline_id)
+
+    @classmethod
     async def get_deadlines(cls, user_id, course_id: int) -> dict[str, Deadline]:
         if user_id in cls._deadlines_cache and str(course_id) in cls._deadlines_cache[user_id]:
             return cls._deadlines_cache[user_id][str(course_id)]

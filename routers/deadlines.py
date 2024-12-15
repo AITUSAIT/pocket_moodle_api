@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query
 
 from modules.database.deadline import DeadlineDB
 from modules.database.models import Deadline
@@ -21,3 +21,9 @@ async def get_deadlines(
     deadlines = await DeadlineDB.get_deadlines(user_id=user_id, course_id=course_id)
 
     return deadlines
+
+
+@router.delete("/deadline/{deadline_id}")
+async def delete_deadline(deadline_id: Annotated[int, Path(title="The ID of the deadline to delete them")]):
+    await DeadlineDB.delete_deadline(deadline_id)
+    return
