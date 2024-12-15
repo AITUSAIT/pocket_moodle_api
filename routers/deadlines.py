@@ -23,7 +23,7 @@ async def get_deadlines(
     return deadlines
 
 
-@router.delete("/deadline/{deadline_id}")
+@router.delete("/{deadline_id}")
 async def delete_deadline(deadline_id: Annotated[int, Path(title="The ID of the deadline to delete them")]):
     await DeadlineDB.delete_deadline(deadline_id)
     return
