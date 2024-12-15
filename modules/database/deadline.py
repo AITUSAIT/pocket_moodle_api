@@ -17,9 +17,9 @@ class DeadlineDB(DB):
 
     @classmethod
     async def delete_deadline(cls, deadline_id: int):
-        for user_id, course in cls._deadlines_cache.items():
+        for _, course in cls._deadlines_cache.items():
             for course_id in course:
-                cls._deadlines_cache[user_id][course_id].pop(str(deadline_id))
+                course[course_id].pop(str(deadline_id))
 
         query = """
         DELETE from deadlines where id = $1
