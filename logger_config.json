@@ -1,0 +1,23 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "json": {
+            "format": "{\"time\": \"%(asctime)s\", \"logger_name\": \"%(name)s\", \"level\": \"%(levelname)s\", \"message\": \"%(message)s\"}",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json"
+        }
+    },
+    "loggers": {
+        "queue": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": false
+        }
+    }
+}
